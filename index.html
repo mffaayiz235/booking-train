@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway Reservation System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('train.jpg') no-repeat center center fixed;
+            background-size: cover;
+            text-align: center;
+        }
+
+        header {
+            background: rgba(51, 51, 51, 0.8);
+            color: white;
+            padding: 1em;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav ul li {
+            display: inline;
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        section {
+            background: rgba(255, 255, 255, 0.9);
+            margin: 20px auto;
+            padding: 20px;
+            width: 50%;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        form input, form select, form button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Railway Reservation System</h1>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showSection('seatAvailability')">Check Seat Availability</a></li>
+                <li><a href="#" onclick="showSection('reserveTicket')">Reserve Ticket</a></li>
+                <li><a href="#" onclick="showSection('cancelTicket')">Cancel Ticket</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="seatAvailability" class="hidden">
+            <h2>Check Seat Availability</h2>
+            <form id="checkSeatForm">
+                <label>Train Number:</label>
+                <input type="text" id="trainNumber" required>
+                <button type="submit">Check</button>
+            </form>
+        </section>
+        <section id="reserveTicket" class="hidden">
+            <h2>Reserve Ticket</h2>
+            <form id="reserveForm">
+                <label>Name:</label>
+                <input type="text" name="name" required>
+                <label>Train Number:</label>
+                <input type="text" name="trainNumber" required>
+                <label>Seat Preference:</label>
+                <select name="seatPreference">
+                    <option>Window</option>
+                    <option>Aisle</option>
+                </select>
+                <button type="submit">Proceed to Payment</button>
+            </form>
+        </section>
+        <section id="cancelTicket" class="hidden">
+            <h2>Cancel Ticket</h2>
+            <form id="cancelForm">
+                <label>Booking ID:</label>
+                <input type="text" name="bookingId" required>
+                <button type="submit">Cancel Ticket</button>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        // Function to switch sections
+        function showSection(sectionId) {
+            let sections = document.querySelectorAll("section");
+            sections.forEach(section => section.classList.add("hidden"));
+            document.getElementById(sectionId).classList.remove("hidden");
+        }
+
+        // Check Seat Availability
+        document.getElementById("checkSeatForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            let trainNumber = document.getElementById("trainNumber").value;
+
+            fetch("php/check_seat_availability.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `trainNumber=${trainNumber}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.availableSeats) {
+                    alert(`Available Seats: ${data.availableSeats}`);
+                } else {
+                    alert(data.error);
+                }
+            });
+        });
+
+        // Reserve Ticket
+        document.getElementById("reserveForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+
+            fetch("php/reserve_ticket.php", {
+                method: "POST",
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Booking Successful! Your Booking ID: ${data.bookingId}`);
+                } else {
+                    alert(data.error);
+                }
+            });
+        });
+
+        // Cancel Ticket
+        document.getElementById("cancelForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+
+            fetch("php/cancel_ticket.php", {
+                method: "POST",
+                body: new URLSearchParams(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Ticket Cancelled Successfully!");
+                } else {
+                    alert(data.error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
